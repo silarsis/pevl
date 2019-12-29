@@ -25,7 +25,7 @@ Design decisions (and whys)
 * Factory is only called with the latest data, not for each version - this is to save
   from having to maintain factories for every version.
 
-* Supporting Python 3.7 and above - because I want to.
+* Supporting Python 3.8 and above - because I want static types.
 
 * All events are dictionaries - for simplicity.
 
@@ -34,6 +34,8 @@ Design decisions (and whys)
 
 * Upgrade methods will get dictionaries and return dictionaries, and wrapping will be invisible - because
   I want this to be as simple to use as possible.
+
+* All versions should be strings, not numbers or other oddball things - for simplicity.
 
 How to Use
 ==========
@@ -61,3 +63,8 @@ def split_first_last_name(event):
 ```
 
 For an example of the code that does the upgrades, see `sample_sns.py`
+
+Likely Failure Modes
+====================
+
+Make sure your versions match what comes out of the event itself. str/int mismatches will be silently ignored.

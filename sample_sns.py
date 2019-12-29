@@ -1,9 +1,18 @@
-from __future__ import print_function
 import json
 import event
 
 
-upgrader = event.Upgrader()
+@event.upgrade('v0.1')
+def split_first_last_name(event):
+    event['first'], event['last'] = event['name'].split()
+
+@event.upgrade('v0.2')
+def add_dob(event):
+    event['dob'] = None  # Don't have this, new data wasn't collected for earlier versions
+
+
+# This should have a list of upgrades
+upgrader = event.Upgrader(upgrades=[split_first_last_name, add_dob])
 
 
 def ingest_log(ev):
