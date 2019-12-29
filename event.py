@@ -1,6 +1,7 @@
 import copy
 import inspect
 from typing import Callable, Iterable, Any
+from functools import wraps
 
 
 VersionMethod = Callable[[dict], str]
@@ -15,25 +16,25 @@ class Event:
         if get_version:
             self.get_version = get_version
         else:
-            self.get_version = lambda x: x.get('version')
+            self.get_version = lambda x: str(x.get('version'))
 
     @property
     def version(self) -> str:
-        return getattr(self, 'get_version')(event)  # Phrased strangely because 'self.get_version()' will introduce a self
+        return getattr(self, 'get_version')(self.event)  # Phrased strangely because 'self.get_version()' will introduce a self
 
 
 def upgrade(version: str = ''):
     " Decorator to declare that a method is an upgrade method "
     def upgrade_decorator(func: Callable[[dict], dict]):
         @wraps(func)
-        def wrapped_function(event: Event):
+        def wrapped_function(event: Event) -> Event:
             if event.version == version:
                 newCopy = copy.deepcopy(event.event)
                 ret = func(newCopy)
                 return Event(ret and ret or newCopy, get_version=event.get_version)  # Allow return or mutate
             return event
         return wrapped_function
-
+    return upgrade_decorator
 
 class Upgrader:
     def __init__(self, upgrades: Iterable = None, get_version: VersionMethod = None, factory: FactoryMethod = None):
@@ -61,7 +62,7 @@ def ingest(upgrades: Iterable, event: dict, factory: FactoryMethod = None):
     return (factory and factory(upgraded) or upgraded)
 
 
-class Upgraders:
+class Upgraders:  # Not yet done
     " Every method in here will be used as an upgrade method. Just be sure to decorate. "
     def upgraders(self):
-        return [ method for name, method in inspect.getmembers(self, predicate=inspect.ismethod) if name is not 'upgraders' ]
+        return [ method for name, method in inspect.getmembers(self, predicate=inspect.ismethod) if name != 'upgraders' ]

@@ -10,8 +10,6 @@ def split_first_last_name(event):
 def add_dob(event):
     event['dob'] = None  # Don't have this, new data wasn't collected for earlier versions
 
-
-# This should have a list of upgrades
 upgrader = event.Upgrader(upgrades=[split_first_last_name, add_dob])
 
 
