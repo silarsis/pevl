@@ -37,12 +37,14 @@ Design decisions (and whys)
 
 * All versions should be strings, not numbers or other oddball things - for simplicity.
 
+* No version will be represented with str(None) (ie. 'None')
+
 How to Use
 ==========
 
 Create a module that holds a bunch of version upgrade methods.
 
-Each method should use the "pevl.event.upgrade" decorator, and in the decorator you specify a version number.
+Each method should use the "pevl.event.upgrade" decorator, and in the decorator you specify a version number to apply to and optionally a new-version number to set (otherwise you must set the new verison number in the upgrade script itself).
 
 Each method should apply an appropriate upgrade from the verison number given to the next version number.
 
