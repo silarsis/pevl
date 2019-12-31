@@ -71,9 +71,9 @@ class Upgrader:
             raise KeyError("All upgrades done, target version {} doesn't match event version {}".format(target_version, wrappedEvent.version))
         return wrappedEvent.event
 
-    def ingest(self, event: dict):  # Returns Any because factory can return anything
+    def ingest(self, event: dict, target_version: str = None):  # Returns Any because factory can return anything
         " This is if you want to build an upgrader class then call it repeatedly for events "
-        upgraded = self.upgrade(event)
+        upgraded = self.upgrade(event, target_version=target_version)
         return (self.factory and self.factory(upgraded) or upgraded)
 
 

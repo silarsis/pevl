@@ -56,3 +56,17 @@ class TestUpgrader(unittest.TestCase):
         u = upgrader.upgrade(e, target_version='0.2')
         self.assertEqual(u['name'], 'first upgrade')
         self.assertEqual(u['version'], '0.2')
+
+    def test_ingest_factory(self):
+        @event.upgrade('0.1', '0.2')
+        def set_name(event: dict):
+            event['name'] = 'first upgrade'
+        @event.upgrade('0.2', '0.3')
+        def reset_name(event: dict):
+            event['name'] = 'second upgrade'
+        def factory(event: dict):
+            return 'factory for {test} {name}'.format(**event)
+        upgrader = event.Upgrader([set_name, reset_name], factory=factory)
+        e = {'test': 'one', 'version': '0.1'}
+        u = upgrader.ingest(e, target_version='0.3')
+        self.assertEqual(u, 'factory for one second upgrade')
