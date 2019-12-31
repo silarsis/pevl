@@ -1,12 +1,13 @@
 import copy
 import inspect
 from typing import Callable, Iterable, Any, List
-from functools import wraps
+from functools import wraps, reduce
 
 
 VersionMethod = Callable[[dict], str]
 VersionSetMethod = Callable[[dict, str], None]
 FactoryMethod = Callable[[dict], Any]
+UpgradeMethod = Callable[[dict], dict]
 
 
 class Event:
@@ -32,7 +33,7 @@ def upgrade(version: str = '', new_version: str = ''):
 
     Takes version to be applied to, and optionally new version to set.
     """
-    def upgrade_decorator(func: Callable[[dict], dict]):
+    def upgrade_decorator(func: UpgradeMethod):
         @wraps(func)
         def wrapped_function(event: Event) -> Event:
             if event.version == version:
@@ -41,35 +42,39 @@ def upgrade(version: str = '', new_version: str = ''):
                 newEvent = Event(ret and ret or newCopy, get_version=event.get_version, set_version=event.set_version)  # Allow return or mutate
                 if new_version:
                     newEvent.version = new_version
+                if newEvent.version == version:
+                    raise KeyError('Upgrade did not change version number - {}'.format(version))
                 return newEvent
             return event
         return wrapped_function
     return upgrade_decorator
 
 class Upgrader:
-    def __init__(self, upgrades: Iterable = None, get_version: VersionMethod = None, factory: FactoryMethod = None):
-        " upgrades is an iterable collection of version upgrade methods "
-        self.upgrades = upgrades or []
+    def __init__(self, upgrades: Iterable[Callable[[Event], Event]] = [], get_version: VersionMethod = None, set_version: VersionSetMethod = None, factory: FactoryMethod = None):
+        " upgrades is a dict of version upgrade methods keyed on version "
+        self.upgrades = dict({ (inspect.getclosurevars(u).nonlocals['version'], u) for u in upgrades })
         self.get_version = get_version
+        self.set_version = set_version
         self.factory = factory
 
-    def upgrade(self, event: Event) -> Event:
-        " Apply all the upgrades to the event "
-        for u in self.upgrades:  # TODO: Make this a repeated dict query on version
-            event = u(event)
-        return event
+    def upgrade(self, event: dict, target_version: str = None) -> dict:
+        " Apply all the upgrades to the event, to an optional target version "
+        wrappedEvent = Event(event, get_version=self.get_version, set_version=self.set_version)
+        while True:
+            if target_version and (wrappedEvent.version == target_version):
+                break
+            u = self.upgrades.get(wrappedEvent.version, None)
+            if u is None:
+                break  # This should mean we've reached the end, may mean we have an aberrant version
+            wrappedEvent = u(wrappedEvent)
+        if (target_version is not None) and (target_version != wrappedEvent.version):
+            raise KeyError("All upgrades done, target version {} doesn't match event version {}".format(target_version, wrappedEvent.version))
+        return wrappedEvent.event
 
     def ingest(self, event: dict):  # Returns Any because factory can return anything
         " This is if you want to build an upgrader class then call it repeatedly for events "
-        upgraded = self.upgrade(Event(event, get_version=self.get_version))
-        return (self.factory and self.factory(upgraded.event) or upgraded.event)
-
-
-def ingest(upgrades: Iterable, event: dict, factory: FactoryMethod = None):  # Returns Any because factory can return anything
-    " In case you want to call the ingester without setting up an upgrader object "
-    u = Upgrader(upgrades)
-    upgraded = u.upgrade(Event(event))
-    return (factory and factory(upgraded.event) or upgraded.event)
+        upgraded = self.upgrade(event)
+        return (self.factory and self.factory(upgraded) or upgraded)
 
 
 class Upgraders:  # Not yet done

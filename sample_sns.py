@@ -2,11 +2,11 @@ import json
 import event
 
 
-@event.upgrade('v0.1')
+@event.upgrade('v0.1', 'v0.2')
 def split_first_last_name(event):
     event['first'], event['last'] = event['name'].split()
 
-@event.upgrade('v0.2')
+@event.upgrade('v0.2', 'v0.3')
 def add_dob(event):
     event['dob'] = None  # Don't have this, new data wasn't collected for earlier versions
 

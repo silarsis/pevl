@@ -14,6 +14,7 @@ class TestEventWrapper(unittest.TestCase):
         @event.upgrade('0.1')
         def set_name(event):
             event['name'] = 'test_single_upgrade_mutation'
+            event['version'] = '0.2'
         e = event.Event({'test': 'one', 'version': '0.1'})
         upgraded = set_name(e)
         self.assertEqual(upgraded.event['name'], 'test_single_upgrade_mutation')
@@ -40,11 +41,29 @@ class TestEventWrapper(unittest.TestCase):
         @event.upgrade('0.1')
         def set_name(event):
             event['name'] = 'test_single_upgrade_mutation'
+            event['version'] = '0.2'
         e = event.Event({'test': 'one', 'version': '0.1'})
         upgraded = set_name(e)
         with self.assertRaises(KeyError):
             e.event['name']
-            
+
+    def test_implicit_version_upgrade(self):
+        @event.upgrade('0.1', '0.2')
+        def set_name(event):
+            event['name'] = 'test_single_upgrade_mutation'
+        e = event.Event({'test': 'one', 'version': '0.1'})
+        upgraded = set_name(e)
+        self.assertEqual(upgraded.event['version'], '0.2')
+        self.assertEqual(upgraded.version, '0.2')
+
+    def test_version_not_upgraded(self):
+        @event.upgrade('0.1')
+        def set_name(event):
+            event['name'] = 'test_single_upgrade_mutation'
+        e = event.Event({'test': 'one', 'version': '0.1'})
+        with self.assertRaises(KeyError):
+            upgraded = set_name(e)
+
         
 if __name__ == '__main__':
     unittest.main()

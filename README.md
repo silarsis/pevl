@@ -52,14 +52,14 @@ Each method should be named descriptively.
 
 Each method takes an event :dict, and returns an event: dict
 
-Version numbers need to sort properly.
+Version numbers do not need to sort properly - but each version needs to upgrade to another version that is then handled (or not, if final version)
 
 Example:
 
 ```python
 from pevl.event import upgrade
 
-@upgrade('v0.1')
+@upgrade('v0.1', 'v0.2')
 def split_first_last_name(event):
     event['first'], event['last'] = event['name'].split()
 ```
@@ -70,3 +70,5 @@ Likely Failure Modes
 ====================
 
 Make sure your versions match what comes out of the event itself. str/int mismatches will be silently ignored.
+
+Make sure you have a version. Again, failed version matches may be ignored.
