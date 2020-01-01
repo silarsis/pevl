@@ -31,8 +31,9 @@ jobs:
         python -m pip install --user --upgrade setuptools wheel
         python setup.py sdist bdist_wheel
     - name: Upload
-      with:
-        pypi_password: ${{ secrets.pypi_password }}
+      env:
+        TWINE_USERNAME: silarsis
+        TWINE_PASSWORD: ${{ secrets.pypi_password }}
       run: |
         python -m pip install --user --upgrade twine
-        TWINE_PASSWORD="${INPUT_PYPI_PASSWORD}" python -m twine upload -u silarsis dist/*
+        python -m twine upload dist/*
