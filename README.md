@@ -1,6 +1,8 @@
 # pevl
 Python Event Versioning Library
 
+https://github.com/silarsis/pevl/workflows/Python%20Event%20Versioning%20Library/badge.svg
+
 This library covers the heavy lifting for event versioning in python.
 
 The target environment is either an event sourcing system, or microservices with

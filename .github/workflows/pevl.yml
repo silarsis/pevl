@@ -26,3 +26,6 @@ jobs:
       run: |
         pip install pytest
         pytest
+    - name: Package
+      run: |
+        python setup.py sdist bdist_wheel
