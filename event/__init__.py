@@ -52,7 +52,7 @@ def upgrade(version: str = '', new_version: str = ''):
 class Upgrader:
     def __init__(self, upgrades: Iterable[Callable[[Event], Event]] = [], get_version: VersionMethod = None, set_version: VersionSetMethod = None, factory: FactoryMethod = None):
         " upgrades is a dict of version upgrade methods keyed on version "
-        self.upgrades = dict({ (inspect.getclosurevars(u).nonlocals['version'], u) for u in upgrades })
+        self.upgrades = dict({(inspect.getclosurevars(u).nonlocals['version'], u) for u in upgrades})
         self.get_version = get_version
         self.set_version = set_version
         self.factory = factory
