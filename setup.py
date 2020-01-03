@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="pevl",
-    version="0.0.1",
+    version="0.0.2",
     packages=find_packages(),
     author="Kevin Littlejohn",
     author_email="kevin@littlejohn.id.au",
