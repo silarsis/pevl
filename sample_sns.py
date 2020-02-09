@@ -6,9 +6,11 @@ import event
 def split_first_last_name(event):
     event['first'], event['last'] = event['name'].split()
 
+
 @event.upgrade('v0.2', 'v0.3')
 def add_dob(event):
     event['dob'] = None  # Don't have this, new data wasn't collected for earlier versions
+
 
 upgrader = event.Upgrader(upgrades=[split_first_last_name, add_dob])
 
@@ -21,4 +23,4 @@ def ingest_log(ev):
 
 def lambda_handler(event, context):
     print("Received event: " + json.dumps(event, indent=2))
-    return [ ingest_log(e) for e in event['Records'] ]
+    return [ingest_log(e) for e in event['Records']]
