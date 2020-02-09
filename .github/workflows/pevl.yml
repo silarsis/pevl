@@ -1,4 +1,4 @@
-name: Python Event Versioning Libary
+name: Python Event Versioning Library
 
 on: [push]
 
