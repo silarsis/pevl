@@ -1,6 +1,6 @@
 name: Python Event Versioning Library
 
-on: [push]
+on: [push, workflow_dispatch]
 
 jobs:
   build:
